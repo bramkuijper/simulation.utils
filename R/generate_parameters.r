@@ -44,10 +44,12 @@ make.batch.file <- function(
         ,executable_path
         ,n_replicates=1
         ,n_cores=1
-        ,batch_file_prefix="batch_file") {
+        ,batch_file_prefix="batch_file"
+        ,output_file_prefix="output"
+        ) {
 
     # check whether parameter listing is of appropriate type
-    if (class(parameter_list) == class(list)) {
+    if (class(parameter_list) == class(list())) {
         # combine all combinations of parameters
         all_parameters <- as.data.frame(expand.grid(parameter_list))
     } else if (class(parameter_list) ==class(data.frame())) {
@@ -69,7 +71,7 @@ make.batch.file <- function(
     list.batch.contents <- list()
 
     # loop through the replicates
-    for (rep_idx in 1:nrep)
+    for (rep_idx in 1:n_replicates)
     {
         # loop through the rows of the combinations
         # dataframe
@@ -77,7 +79,7 @@ make.batch.file <- function(
         {
             # generate the output file name for the
             # current simulation
-            filename <- paste(basename,"_",file_idx,sep="")
+            filename <- paste(output_file_prefix,"_",file_idx,sep="")
 
             # update count of the file index counter
             file_idx <- file_idx + 1
@@ -91,18 +93,21 @@ make.batch.file <- function(
 
             # add an output file to the end
             # which we may or may not use
-            params_concatenated <- paste(params_concatenated,filename)
+            params_concatenated <- paste(
+                executable_path
+                ,params_concatenated
+                ,filename)
 
             # append this line to the list with which we
             # will create a batch file
-            batch_file_contents <- c(batch_file_contents
+            list.batch.contents <- c(list.batch.contents
                                      ,list(params_concatenated))
         } # for (row_idx in 1:nrows)
     } # for (rep_idx in 1:nrep)
 
     # write the batch file
-    write(x=paste(batch_file_contents,collapse="\n")
-            ,file=batch_file_name)
+    write(x=paste(list.batch.contents,collapse="\n")
+            ,file=paste0(batch_file_prefix,".sh"))
 } # end make_batch_file
 
 
