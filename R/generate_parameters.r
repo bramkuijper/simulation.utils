@@ -46,8 +46,17 @@ make.batch.file <- function(
         ,n_cores=1
         ,batch_file_prefix="batch_file") {
 
-    # combine all combinations of parameters
-    all_parameters <- as.data.frame(expand.grid(parameter_object))
+    # check whether parameter listing is of appropriate type
+    if (class(parameter_list) == class(list)) {
+        # combine all combinations of parameters
+        all_parameters <- as.data.frame(expand.grid(parameter_list))
+    } else if (class(parameter_list) ==class(data.frame())) {
+        all_parameters <- parameter_list
+    } else {
+        stop("parameter_list should be a list or data.frame")
+    }
+
+
 
     # collect a count of all the parameters
     nrows <- nrow(all_parameters)
