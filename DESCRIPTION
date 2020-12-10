@@ -8,10 +8,11 @@ Authors@R:
            email = "a.l.w.kuijper@exeter.ac.uk",
            comment = c(ORCID = "0000-0002-7263-2846"))
 Description: This package contains various tools to facilitate running
-numerical or individual-based simulations on your computer. The function
-make.batch.file() produces a bash shell script (a batch file) that allows
-you to run a list of different simulations. Next, the function aggregate.sims()
-allows you to aggregrate data from simulation output
+  numerical or individual-based simulations on your computer. The function
+  make.batch.file() produces a bash shell script (a batch file) that allows
+  you to run a list of different simulations. Next, the function 
+  aggregate.sims() allows you to aggregrate data from multiple simulation
+  output files
 
 License: `use_mit_license()`
 Encoding: UTF-8
