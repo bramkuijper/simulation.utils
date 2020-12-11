@@ -75,6 +75,7 @@ patterns2lines <- function(
 #' simulation.
 
 summarize.sims <- function(simulations_path
+                           ,simulation_file_pattern=
                            ,parameter_start_pattern="^var"
                            ,parameter_end_pattern=NA
                            ,data_start_pattern="^generation"
@@ -84,14 +85,8 @@ summarize.sims <- function(simulations_path
 {
     # get a list of all the simulation files
     all.simulation.files <- list.files(
-            path="."
-            ,pattern="sim_.*")
-
-    # minimum number of lines you want from each simulation
-    # (counting from the end that is)
-    # if you want the last line from each sim: 1
-    # if you want the last 20 lines from each sim: 20
-    # if you want everything
+            path=simulations_path
+            ,pattern=simulation_file_pattern)
 
     # place holder variable for a big
     # data frame with all simulations
