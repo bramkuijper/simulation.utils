@@ -9,7 +9,10 @@ make.batch.file(
   executable_path,
   n_replicates = 1,
   n_cores = 1,
-  batch_file_prefix = "batch_file"
+  batch_file_prefix = "batch_file",
+  output_file_prefix = "output",
+  yaml = F,
+  yaml_file_prefix = "parameter_file"
 )
 }
 \arguments{
@@ -27,32 +30,77 @@ of each simulation}
 can be run in parallel}
 
 \item{batch_file_prefix}{the prefix of the resulting batch file to which
-all the output will be written to}
+all the simulation commands will be written to}
+
+\item{output_file_prefix}{the prefix of the resulting output file to which
+each simulation will write its output.}
+
+\item{yaml}{if \code{yaml = TRUE}, simulations are fed \code{.yaml} files
+(i.e., files written in the \code{yaml} format, see:
+\href{https://yaml.org/spec/1.2/spec.html}{here}
+).
+Hence, this function will write each parameter combination is
+to a single \code{.yaml}
+file. See parameter \code{yaml_file_prefix} for the prefix of each file.
+If \code{yaml = FALSE}, simulations are fed parameters through the
+command line (through the \code{argv} and \code{argc} parameters in C).}
+
+\item{yaml_file_prefix}{the prefix of each individual \code{.yaml} file that is
+containing the parameters for a single simulation}
 }
 \value{
-nothing, but a file with the path batch_file_prefix will be
-written to disk
+This function returns \code{NULL}. However,
+a file with name \code{batch_file_prefix} will be
+written to disk. If the option \code{yaml=TRUE}, this will be accompanied
+by one or more \code{.yaml} files.
 }
 \description{
-This function produces a batch file
-in the following format:
+This function produces a batch file named \code{batch_file_prefix.sh}
+with the following contents:
+\preformatted{
 /path/to/executable.exe 0.01 1 0 output_file_1.csv
 /path/to/executable.exe 0.01 2 0 output_file_2.csv
 /path/to/executable.exe 0.02 1 0 output_file_3.csv
-etc
+}
+
+However, when the option \code{yaml=TRUE} the batch file
+named \code{batch_file_prefix.sh} will contain:
+\preformatted{
+/path/to/executable.exe -f parameter_file1.yaml
+/path/to/executable.exe -f parameter_file2.yaml
+/path/to/executable.exe -f parameter_file3.yaml
+}
+where parameter_file1.yaml then contains:
+\preformatted{
+param_name1: 0.01
+param_name2: 1
+param_name3: 1
+output_file: output_file_1.csv
+}
+
+If this is all done, you can then run the batch file in any UNIX terminal
+(e.g., Mac OS X terminal, MSYS2 on Windows) by giving the UNIX terminal the
+command
+\preformatted{
+bash batch_file_prefix.sh
+}
+which causes all simulations to be run sequentially.
 }
 \examples{
-:
-#initalize parameter object
+#initalize a parameter object
 parameter_object <- list()
-parameter_object$a <- c(0.0,0.01)
+parameter_object$z <- c(0.0,0.01)
 parameter_object$b <- 0.1
 
 make_batch_file(parameter_list=parameter_object
                      ,executable_path="./my_simulation.exe")
 # which produces a file in the current directory
 # called 'batch_file.sh'
-# with the contents
-# ./my_simulation.exe 0.0 0.1 output_file_1
-# ./my_simulation.exe 0.001 0.1 output_file_1
+# with the particular parameter value of parameter \code{z}
+# printed first and then the value of parameter \code{b}, followed by the
+# name of the output file for this simulation:
+./my_simulation.exe 0.0 0.1 output_file_1
+./my_simulation.exe 0.001 0.1 output_file_2
+
+
 }

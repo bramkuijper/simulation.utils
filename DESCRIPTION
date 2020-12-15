@@ -1,5 +1,5 @@
 Package: simulation.utils
-Title: Utilities for Working with Kuijper Lab Simulations
+Title: Utilities for Working with Simulations in the Kuijper Lab
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Bram",
@@ -12,9 +12,10 @@ Description: This package contains various tools to facilitate running
   make.batch.file() produces a bash shell script (a batch file) that allows
   you to run a list of different simulations. Next, the function 
   aggregate.sims() allows you to aggregrate data from multiple simulation
-  output files
-
+  output files.
 License: `use_mit_license()`
+Imports:
+  yaml
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
