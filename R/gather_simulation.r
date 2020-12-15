@@ -71,8 +71,9 @@ patterns2lines <- function(
 } # end function find_out_param_line()
 
 
-#' Summarizes a bunch of simulation by producing a dataframe
-#' with parameters and the data from the last generation
+#' Summarizes a collection of simulation files, by producing a
+#' \code{data.frame}
+#' containing parameters and the data from the last generation
 #'
 #' @param simulations_path the directory in which all the simulations are
 #' collected
@@ -121,9 +122,7 @@ patterns2lines <- function(
 #' # generation: num 50000 500000 500000 ...
 #' # var1: num 1 2 3 4 ...
 #' # x: num 0.33 0.35 0.35...
-
-
-
+#' @export
 summarize.sims <- function(simulations_path
                            ,simulation_file_pattern="sim_.*"
                            ,parameter_start_pattern="^var"

@@ -2,8 +2,9 @@
 % Please edit documentation in R/gather_simulation.r
 \name{summarize.sims}
 \alias{summarize.sims}
-\title{Summarizes a bunch of simulation by producing a dataframe
-with parameters and the data from the last generation}
+\title{Summarizes a collection of simulation files, by producing a
+\code{data.frame}
+containing parameters and the data from the last generation}
 \usage{
 summarize.sims(
   simulations_path,
@@ -48,8 +49,9 @@ A \code{data.frame} containing the parameters and last line of
 output of each simulation file and the corresponding file name
 }
 \description{
-Summarizes a bunch of simulation by producing a dataframe
-with parameters and the data from the last generation
+Summarizes a collection of simulation files, by producing a
+\code{data.frame}
+containing parameters and the data from the last generation
 }
 \examples{
 # say the current directory "."

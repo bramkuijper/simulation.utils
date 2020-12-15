@@ -2,3 +2,4 @@
 
 export(make.batch.file)
 export(make.batch.file.yaml)
+export(summarize.sims)
