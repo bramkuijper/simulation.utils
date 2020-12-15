@@ -1,5 +1,24 @@
 ### R script to make your own batch file
 
+row.2.yaml <- function(data.frame.row) {
+
+    names_row <- names(data.frame.row)
+
+    yaml_str = ""
+
+    for (name_i in names_row){
+        yaml_str = paste0(yaml_str
+                         ,name_i
+                         ,": "
+                         ,data.frame.row[name_i]
+                         ,"\n"
+                        )
+    }
+
+    return(yaml_str)
+}
+
+
 # Auxiliary function to expand.grid() a parameter list if
 # it is a list of values. However, if it is a data frame
 # do nothing
@@ -103,6 +122,8 @@ make.batch.file.yaml <- function(
     # each simulation
     file_idx <- 1
 
+    list.batch.contents <- list()
+
     # loop through the replicates
     for (rep_idx in 1:n_replicates)
     {
@@ -114,18 +135,20 @@ make.batch.file.yaml <- function(
             # current simulation
             yaml_filename <- paste0(yaml_file_prefix,"_",file_idx,".yaml")
 
-            # update file index counter
-            file_idx <- file_idx + 1
-
             # copy the corresponding row of the data frame
             # to a list object so that we can safely add a filename
             param_row_list <- all_parameters[row_idx,]
 
             # add filename to yaml file contents
-            param_row_list[output_file_yaml_key] <- output_file_prefix
+            param_row_list[output_file_yaml_key] <- paste0(
+                output_file_prefix
+                ,"_"
+                ,file_idx
+                )
 
             # make yaml file contents
-            yaml_file_contents <- as.yaml(x=param_row_list)
+            yaml_file_contents <- row.2.yaml(
+                data.frame.row = param_row_list)
 
             # write the jaml file
             writeLines(text=yaml_file_contents
@@ -142,10 +165,18 @@ make.batch.file.yaml <- function(
                 ,yaml_filename
                 ,sep = " ")
 
+            echo_msg <- paste0("echo ",file_idx)
+
             # append this line to the list with which we
             # will create a batch file
             list.batch.contents <- c(list.batch.contents
-                                     ,list(params_concatenated))
+                                     ,list(echo_msg, params_concatenated))
+
+
+            # update file index counter
+            file_idx <- file_idx + 1
+
+
         } # for (row_idx in 1:nrows)
     } # for (rep_idx in 1:nrep)
 

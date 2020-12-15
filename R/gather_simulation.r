@@ -14,6 +14,16 @@ collect.params <- function(filename
             ,nrow=line_to
             ,stringsAsFactors=F)
 
+    if (is.null(nrow(raw.params)) || nrow(raw.params) < 1) {
+        stop(paste("Cannot find any parameters between lines"
+                   ,line_from
+                   ,"and"
+                   ,line_to
+                   ,"in file"
+                   ,filename
+                   ))
+    }
+
     p = as.data.frame(t(raw.params$V2), stringsAsFactors=F)
     colnames(p) <- raw.params$V1
 
@@ -73,7 +83,8 @@ patterns2lines <- function(
 
 #' Summarizes a collection of simulation files, by producing a
 #' \code{data.frame}
-#' containing parameters and the data from the last generation
+#' each row of which contains the parameters and the data from the last
+#' generation of a single simulation file
 #'
 #' @param simulations_path the directory in which all the simulations are
 #' collected
@@ -108,8 +119,20 @@ patterns2lines <- function(
 #' # ├── sim_cue_integration_23_06_2020_095246_11.csv
 #' # ├── sim_cue_integration_23_06_2020_095246_11_dist.csv
 #' #
+#' # we need to obtain the files
+#' # ├── sim_cue_integration_23_06_2020_095246_1.csv
+#' # ├── sim_cue_integration_23_06_2020_095246_10.csv
+#' # ├── sim_cue_integration_23_06_2020_095246_11.csv
+#' #
+#' # hence we provide a simulation_file_pattern = "sim_.*\\d\\.csv"
+#' # which is a regular expression mating sim_ followed by a series
+#' # of any characters .* finalized by a digit \\d followed by a
+#' # dot \\. and csv
+#' #
 #' data <- summarize.sims(simulations_path="."
-#'                            ,simulation_file_pattern="sim_.*?\\d.csv"
+#'                            ,simulation_file_pattern="sim_.*\\d\\.csv"
+#'                            ,parameter_start_pattern="^sigmoid"
+#'                            ,parameter_end_pattern="^sigmoid"
 #'                            )
 #' # collects the output from the files in the data.frame data
 #' # sim_cue_integration_23_06_2020_095246_1.csv
@@ -118,10 +141,11 @@ patterns2lines <- function(
 #'
 #' # data will look like
 #' str(data)
-#' # 'data.frame':	150 obs. of  3 variables:
+#' # 'data.frame':	150 obs. of  4 variables:
 #' # generation: num 50000 500000 500000 ...
 #' # var1: num 1 2 3 4 ...
 #' # x: num 0.33 0.35 0.35...
+#' # file: sim_cue_integration_23_06_2020_095246_1.csv ...
 #' @export
 summarize.sims <- function(simulations_path
                            ,simulation_file_pattern="sim_.*"
@@ -143,7 +167,11 @@ summarize.sims <- function(simulations_path
 
     # place holder variable for a big
     # data frame with all simulations
-    big.dataframe.all.sims <- NULL
+    big.dataframe.all.sims <- NA
+
+    if (length(all.simulation.files) < 1) {
+        return(NA)
+    }
 
     for (i in 1:length(all.simulation.files))
     {
@@ -154,7 +182,10 @@ summarize.sims <- function(simulations_path
         print(paste0("processing file "
                      ,i
                      ," out of "
-                     ,length(all.simulation.files)))
+                     ,length(all.simulation.files)
+                     ,": "
+                     ,file_i
+                     ))
 
         param.lines <- patterns2lines(
                filename=file_i_chr
@@ -162,10 +193,19 @@ summarize.sims <- function(simulations_path
                ,pattern_to = parameter_end_pattern
             )
 
+        if (is.na(param.lines[[1]])) {
+            stop(paste("cannot find a match for the pattern "
+                        ,"parameter_start_pattern='"
+                        ,parameter_start_pattern
+                        ,"' in the file ",file_i
+                        ,sep=""
+                 ))
+        }
+
         parameters <- collect.params(
                        filename=file_i_chr
-                       ,param.lines[[1]]
-                       ,param.lines[[2]]
+                       ,line_from = param.lines[[1]]
+                       ,line_to = param.lines[[2]]
                        ,sep=sep)
 
         data.lines <- patterns2lines(
@@ -187,6 +227,7 @@ summarize.sims <- function(simulations_path
                    # header )
                    ,no = data.lines[[2]] - data.lines[[1]] - 1)
 
+        # read the actual data
         the.data <- read.table(
             file=file_i_chr
             ,header=T
@@ -196,13 +237,24 @@ summarize.sims <- function(simulations_path
             ,nrow=pos.last.line-1
             ,sep=";")
 
+        # get last line of the data
         last.line <- the.data[nrow(the.data),]
 
-        total.data <- cbind(parameters,the.data)
+        # now tie parameters, last line of data and filename together
+        total.data <- cbind(
+            parameters
+            ,last.line
+            ,list(file=file_i))
 
-        big.dataframe.all.sims <- rbind(
-            big.dataframe.all.sims
-            ,total.data)
+
+
+        if (is.na(big.dataframe.all.sims)) {
+            big.dataframe.all.sims <- total.data
+        } else {
+            big.dataframe.all.sims <- rbind(
+                big.dataframe.all.sims
+                ,total.data)
+        }
 
     } # end for
 
