@@ -10,9 +10,7 @@ make.batch.file(
   n_replicates = 1,
   n_cores = 1,
   batch_file_prefix = "batch_file",
-  output_file_prefix = "output",
-  yaml = F,
-  yaml_file_prefix = "parameter_file"
+  output_file_prefix = "output"
 )
 }
 \arguments{
@@ -92,15 +90,16 @@ parameter_object <- list()
 parameter_object$z <- c(0.0,0.01)
 parameter_object$b <- 0.1
 
+# call the batch file function
 make_batch_file(parameter_list=parameter_object
                      ,executable_path="./my_simulation.exe")
-# which produces a file in the current directory
-# called 'batch_file.sh'
-# with the particular parameter value of parameter \code{z}
-# printed first and then the value of parameter \code{b}, followed by the
-# name of the output file for this simulation:
-./my_simulation.exe 0.0 0.1 output_file_1
-./my_simulation.exe 0.001 0.1 output_file_2
+# which produces a file named 'batch_file.sh' in the current directory
+# containing:
+# ./my_simulation.exe 0.0 0.1 output_file_1
+# ./my_simulation.exe 0.001 0.1 output_file_2
+# Note that the value of parameter z is
+# printed first and then the value of parameter b, followed by the
+# name of the output file for this simulation
 
 
 }

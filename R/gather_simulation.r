@@ -71,14 +71,58 @@ patterns2lines <- function(
 } # end function find_out_param_line()
 
 
+#' Summarizes a bunch of simulation by producing a dataframe
+#' with parameters and the data from the last generation
+#'
+#' @param simulations_path the directory in which all the simulations are
+#' collected
+#' @param simulation_file_pattern a \href{
+#' https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html
+#' }{regular expression} that matches the simulation files
+#' @param parameter_start_pattern a regular expression that matches the start
+#' of the parameters
+#' @param parameter_end_pattern a regular expression that matches the end
+#' of the parameters. If parameters are at the end of the file anyway
+#' one can just write \code{NA}
+#' @param data_start_pattern a regular expression that matches the start
+#' of the data output for each timestep or generation
+#' @param data_end_pattern a regular expression that matches the end
+#' of the data output for each timestep or generation
+#' @param sep data separators, e.g., \code{","} or \code{"\t"}
+#' @param recursive if \code{recursive = TRUE}, the search for simulation files
+#' recurses into subdirectories. If \code{recursive = FALSE}, only the current
+#' directory will be searched without descending into subdirectories
+#'
+#' @return A \code{data.frame} containing the parameters and last line of
+#' output of each simulation file and the corresponding file name
+#'
+#' @examples
+#' # say the current directory "."
+#' # contains the following files:
+#' # ├── file_x.csv
+#' # ├── parameters.txt
+#' # ├── sim_cue_integration_23_06_2020_095246_1.csv
+#' # ├── sim_cue_integration_23_06_2020_095246_10.csv
+#' # ├── sim_cue_integration_23_06_2020_095246_10_dist.csv
+#' # ├── sim_cue_integration_23_06_2020_095246_11.csv
+#' # ├── sim_cue_integration_23_06_2020_095246_11_dist.csv
+#' #
+#' data <- summarize.sims(simulations_path="."
+#'                            ,simulation_file_pattern="sim_.*?\\d.csv"
+#'                            )
+#' # collects the output from the files in the data.frame data
+#' # sim_cue_integration_23_06_2020_095246_1.csv
+#' # sim_cue_integration_23_06_2020_095246_10.csv
+#' # sim_cue_integration_23_06_2020_095246_11.csv
+#'
+#' # data will look like
+#' str(data)
+#' # 'data.frame':	150 obs. of  3 variables:
+#' # generation: num 50000 500000 500000 ...
+#' # var1: num 1 2 3 4 ...
+#' # x: num 0.33 0.35 0.35...
 
-#' if you have a bunch of simulation files in a directory
-#' \code{example_dir}, the function
-#' \code{summarize.sims(simulations_path=example_dir,...)}
-#' goes through all files in that directory
-#' The function returns a data.frame, each row of which contains the
-#' parameters, filename and the last generation of the output of a single
-#' simulation.
+
 
 summarize.sims <- function(simulations_path
                            ,simulation_file_pattern="sim_.*"
