@@ -14,8 +14,6 @@ Description: This package contains various tools to facilitate running
   aggregate.sims() allows you to aggregrate data from multiple simulation
   output files.
 License: `use_mit_license()`
-Imports:
-  yaml
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
