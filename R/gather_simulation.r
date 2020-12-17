@@ -246,11 +246,19 @@ summarize.sims <- function(simulations_path
             ,last.line
             ,list(file=file_i))
 
+        if (class(total.data) != class(data.frame())) {
+            stop(paste("Data returned from file "
+                       ,file_i_chr
+                       ," is not in a proper data.frame format."
+                       ,sep=""))
+        }
 
-
-        if (is.na(big.dataframe.all.sims)) {
+        if (class(big.dataframe.all.sims) != class(data.frame())) {
+            # if the data frame is not existing yet,
+            # just add total data to big.dataframe.all.sims
             big.dataframe.all.sims <- total.data
         } else {
+            # otherwise append to data.frame
             big.dataframe.all.sims <- rbind(
                 big.dataframe.all.sims
                 ,total.data)
