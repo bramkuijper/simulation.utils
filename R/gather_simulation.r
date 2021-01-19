@@ -197,12 +197,15 @@ summarize.sims <- function(simulations_path
             )
 
         if (is.na(param.lines[[1]])) {
-            stop(paste("cannot find a match for the pattern "
+            print(paste("cannot find a match for the pattern "
                         ,"parameter_start_pattern='"
                         ,parameter_start_pattern
                         ,"' in the file ",file_i
+                        ,". Skipping this file."
                         ,sep=""
                  ))
+
+            next
         }
 
         parameters <- collect.params(
