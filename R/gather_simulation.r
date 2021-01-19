@@ -15,13 +15,16 @@ collect.params <- function(filename
             ,stringsAsFactors=F)
 
     if (is.null(nrow(raw.params)) || nrow(raw.params) < 1) {
-        stop(paste("Cannot find any parameters between lines"
+        print(paste("Cannot find any parameters between lines"
                    ,line_from
                    ,"and"
                    ,line_to
                    ,"in file"
                    ,filename
+                   ,". Skipping."
                    ))
+
+        return(NULL)
     }
 
     p = as.data.frame(t(raw.params$V2), stringsAsFactors=F)
@@ -207,6 +210,13 @@ summarize.sims <- function(simulations_path
                        ,line_from = param.lines[[1]]
                        ,line_to = param.lines[[2]]
                        ,sep=sep)
+
+
+        if (is.null(parameters))
+        {
+            next 
+        }
+
 
         data.lines <- patterns2lines(
                filename=file_i_chr
