@@ -11,7 +11,7 @@ collect.params <- function(filename
             ,header= F
             ,sep=sep
             ,skip=line_from
-            ,nrow=line_to
+            ,nrow=line_to-line_from
             ,stringsAsFactors=F)
 
     if (is.null(nrow(raw.params)) || nrow(raw.params) < 1) {
@@ -185,13 +185,13 @@ summarize.sims <- function(simulations_path
                      ,length(all.simulation.files)
                      ,": "
                      ,file_i
-                     ))
+                     )
+             )
 
         param.lines <- patterns2lines(
                filename=file_i_chr
                ,pattern_from = parameter_start_pattern
-               ,pattern_to = parameter_end_pattern
-            )
+               ,pattern_to = parameter_end_pattern)
 
         if (is.na(param.lines[[1]])) {
             stop(paste("cannot find a match for the pattern "
@@ -225,7 +225,7 @@ summarize.sims <- function(simulations_path
                    # end to data, subtract lines to skip
                    # and subtract 1 additional line (because
                    # header )
-                   ,no = data.lines[[2]] - data.lines[[1]] - 1)
+                   ,no = data.lines[[2]] - data.lines[[1]] - 2)
 
         # read the actual data
         the.data <- read.table(
@@ -234,7 +234,7 @@ summarize.sims <- function(simulations_path
             ,skip=data.lines[[1]]-1 # R suddenly counts from 0
             ,blank.lines.skip = T
             ,strip.white=T
-            ,nrow=pos.last.line-1
+            ,nrow=pos.last.line
             ,sep=";")
 
         # get last line of the data
