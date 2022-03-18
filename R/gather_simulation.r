@@ -55,12 +55,21 @@ patterns2lines <- function(
     # where data is printed (i.e., a line which starts with a digit)
     for (line_i in seqq)
     {
-#        print(line_i)
-#        print(f[[line_i]])
-#        print(grep(pattern="^$",f[[line_i]]))
+        #        print(paste("line numbert: ", line_i))
+        #        print(paste0("line contents: '",f[[line_i]],"'"))
+        #        #        print(paste("grep result endline: ",grep(pattern="^$",f[[line_i]])))
+        #        print(paste("found_first true: ",found_first))
+        #        print(paste("found_first pattern: ",pattern_from))
+        #        print(paste("grep pattern: ",length(grep(pattern=pattern_from, x=f[[line_i]]))))
+
+#        if (!is.na(pattern_to))
+#        {
+#            print(paste("grep pattern end: ",length(grep(pattern=pattern_to, x=f[[line_i]]))))
+#        }
+        
         # if you are not yet in the parameter listing
         # and you find the start of the parameter listing
-        if (!found_first && length(grep(pattern_from, f[[line_i]])) > 0)
+        if (!found_first && length(grep(pattern=pattern_from, x=f[[line_i]])) > 0)
         {
             found_first <- T
             line_from <- line_i
@@ -220,7 +229,6 @@ summarize.sims <- function(simulations_path
             next 
         }
 
-
         data.lines <- patterns2lines(
                filename=file_i_chr
                ,pattern_from = data_start_pattern
@@ -231,13 +239,12 @@ summarize.sims <- function(simulations_path
             data.lines[[1]] = 1
         }
 
-
         pos.last.line <-
             ifelse(test = is.na(data.lines[[2]])
                    ,yes = -1  # no end to data, write -1
                    # end to data, subtract lines to skip
                    # and subtract 1 additional line (because
-                   # header )
+                   # header)
                    ,no = data.lines[[2]] - data.lines[[1]] - 2)
 
         # read the actual data
@@ -247,7 +254,7 @@ summarize.sims <- function(simulations_path
             ,skip=data.lines[[1]]-1 # R suddenly counts from 0
             ,blank.lines.skip = T
             ,strip.white=T
-            ,nrow=pos.last.line
+            ,nrows=pos.last.line
             ,sep=";")
 
         # get last line of the data
