@@ -37,6 +37,9 @@ each simulation will write its output.}
 
 \item{yaml_file_prefix}{the prefix of each individual \code{.yaml} file that
 iscontaining the parameters for a single simulation}
+
+\item{output_file_yaml_key}{the identifier key that a file name has in the
+yaml file. Default is \code{base_name}.}
 }
 \value{
 This function returns \code{NULL}. However,
@@ -75,7 +78,7 @@ parameter_object$z <- c(0.0,0.01)
 parameter_object$b <- 0.1
 
 # call the batch file function
-make_batch_file(parameter_list=parameter_object
+make.batch.file(parameter_list=parameter_object
                      ,executable_path="./my_simulation.exe")
 # which produces a file named 'batch_file.sh' in the current directory
 # containing:

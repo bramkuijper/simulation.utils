@@ -4,7 +4,8 @@
 \alias{summarize.sims}
 \title{Summarizes a collection of simulation files, by producing a
 \code{data.frame}
-containing parameters and the data from the last generation}
+each row of which contains the parameters and the data from the last
+generation of a single simulation file}
 \usage{
 summarize.sims(
   simulations_path,
@@ -14,16 +15,17 @@ summarize.sims(
   data_start_pattern = "^generation",
   data_end_pattern = "^\\n",
   sep = ";",
-  recursive = T
+  recursive = T,
+  callback_data = NULL,
+  callback_parameters = NULL
 )
 }
 \arguments{
 \item{simulations_path}{the directory in which all the simulations are
 collected}
 
-\item{simulation_file_pattern}{a \href{
-https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html
-}{regular expression} that matches the simulation files}
+\item{simulation_file_pattern}{a \href{https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html}{regular expression}
+that matches the simulation files}
 
 \item{parameter_start_pattern}{a regular expression that matches the start
 of the parameters}
@@ -43,15 +45,32 @@ of the data output for each timestep or generation}
 \item{recursive}{if \code{recursive = TRUE}, the search for simulation files
 recurses into subdirectories. If \code{recursive = FALSE}, only the current
 directory will be searched without descending into subdirectories}
+
+\item{callback_data}{function to perform additional
+processing of the data (variables) section.
+The function needs to accept a single argument \code{x}.
+For example, \code{callback_data=some_func(x)}. This argument will be assigned
+a \code{data.frame} containing all the data
+The callback function needs to return a named list
+of values as in \code{list(a=3,b=30.0,xk=-393)} that will be appended to the final reuslt}
+
+\item{callback_parameters}{function to perform additional processing of the parameters section.
+The function needs to accept a single argument \code{x}. This argument will be
+assigned a \code{data.frame} containing the names of the parameters in the first
+columna and the corresponding parameter values in the second column.
+The callback function needs to return a named list
+of values as in \code{list(a=3,b=30.0,xk=-393)} that will be appended to the final result}
 }
 \value{
-A \code{data.frame} containing the parameters and last line of
-output of each simulation file and the corresponding file name
+A \code{data.frame}, each row of which contains the parameters and last line of
+output of each simulation file and the corresponding file name in a column named
+\code{file}
 }
 \description{
 Summarizes a collection of simulation files, by producing a
 \code{data.frame}
-containing parameters and the data from the last generation
+each row of which contains the parameters and the data from the last
+generation of a single simulation file
 }
 \examples{
 # say the current directory "."
@@ -64,8 +83,20 @@ containing parameters and the data from the last generation
 # ├── sim_cue_integration_23_06_2020_095246_11.csv
 # ├── sim_cue_integration_23_06_2020_095246_11_dist.csv
 #
+# we need to obtain the files
+# ├── sim_cue_integration_23_06_2020_095246_1.csv
+# ├── sim_cue_integration_23_06_2020_095246_10.csv
+# ├── sim_cue_integration_23_06_2020_095246_11.csv
+#
+# hence we provide a simulation_file_pattern = "sim_.*\\d\\.csv"
+# which is a regular expression mating sim_ followed by a series
+# of any characters .* finalized by a digit \\d followed by a
+# dot \\. and csv
+#
 data <- summarize.sims(simulations_path="."
-                           ,simulation_file_pattern="sim_.*?\\\\d.csv"
+                           ,simulation_file_pattern="sim_.*\\\\d\\\\.csv"
+                           ,parameter_start_pattern="^sigmoid"
+                           ,parameter_end_pattern="^sigmoid"
                            )
 # collects the output from the files in the data.frame data
 # sim_cue_integration_23_06_2020_095246_1.csv
@@ -74,8 +105,9 @@ data <- summarize.sims(simulations_path="."
 
 # data will look like
 str(data)
-# 'data.frame':	150 obs. of  3 variables:
+# 'data.frame':	150 obs. of  4 variables:
 # generation: num 50000 500000 500000 ...
 # var1: num 1 2 3 4 ...
 # x: num 0.33 0.35 0.35...
+# file: sim_cue_integration_23_06_2020_095246_1.csv ...
 }

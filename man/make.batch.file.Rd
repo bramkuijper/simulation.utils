@@ -91,7 +91,7 @@ parameter_object$z <- c(0.0,0.01)
 parameter_object$b <- 0.1
 
 # call the batch file function
-make_batch_file(parameter_list=parameter_object
+make.batch.file(parameter_list=parameter_object
                      ,executable_path="./my_simulation.exe")
 # which produces a file named 'batch_file.sh' in the current directory
 # containing:

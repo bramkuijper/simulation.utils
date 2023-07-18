@@ -5,8 +5,10 @@
 collect.params <- function(filename
                            ,line_from
                            ,line_to = NA
-                           ,sep=";")
+                           ,sep=";"
+                           ,callback=NULL)
 {
+    # get the data frame with parameters
     raw.params <- read.table(filename
             ,header= F
             ,sep=sep
@@ -27,10 +29,18 @@ collect.params <- function(filename
         return(NULL)
     }
 
-    p = as.data.frame(t(raw.params$V2), stringsAsFactors=F)
-    colnames(p) <- raw.params$V1
+    param.df = as.data.frame(t(raw.params$V2), stringsAsFactors=F)
+    colnames(param.df) <- raw.params$V1
 
-    return(p)
+    if (!is.null(callback))
+    {
+        callback.result <- callback(raw.params)
+
+        param.df <- cbind(param.df,callback.result)
+    }
+
+
+    return(param.df)
 }
 
 
@@ -66,7 +76,7 @@ patterns2lines <- function(
 #        {
 #            print(paste("grep pattern end: ",length(grep(pattern=pattern_to, x=f[[line_i]]))))
 #        }
-        
+
         # if you are not yet in the parameter listing
         # and you find the start of the parameter listing
         if (!found_first && length(grep(pattern=pattern_from, x=f[[line_i]])) > 0)
@@ -100,9 +110,8 @@ patterns2lines <- function(
 #'
 #' @param simulations_path the directory in which all the simulations are
 #' collected
-#' @param simulation_file_pattern a \href{
-#' https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html
-#' }{regular expression} that matches the simulation files
+#' @param simulation_file_pattern a \href{https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html}{regular expression}
+#'  that matches the simulation files
 #' @param parameter_start_pattern a regular expression that matches the start
 #' of the parameters
 #' @param parameter_end_pattern a regular expression that matches the end
@@ -116,9 +125,24 @@ patterns2lines <- function(
 #' @param recursive if \code{recursive = TRUE}, the search for simulation files
 #' recurses into subdirectories. If \code{recursive = FALSE}, only the current
 #' directory will be searched without descending into subdirectories
+#' @param callback_data function to perform additional
+#' processing of the data (variables) section.
+#' The function needs to accept a single argument \code{x}.
+#' For example, \code{callback_data=some_func(x)}. This argument will be assigned
+#' a \code{data.frame} containing all the data
+#' The callback function needs to return a named list
+#' of values as in \code{list(a=3,b=30.0,xk=-393)} that will be appended to the final reuslt
+#' @param callback_parameters function to perform additional processing of the parameters section.
+#' The function needs to accept a single argument \code{x}. This argument will be
+#' assigned a \code{data.frame} containing the names of the parameters in the first
+#' columna and the corresponding parameter values in the second column.
+#' The callback function needs to return a named list
+#' of values as in \code{list(a=3,b=30.0,xk=-393)} that will be appended to the final result
 #'
-#' @return A \code{data.frame} containing the parameters and last line of
-#' output of each simulation file and the corresponding file name
+#'
+#' @return A \code{data.frame}, each row of which contains the parameters and last line of
+#' output of each simulation file and the corresponding file name in a column named
+#' \code{file}
 #'
 #' @examples
 #' # say the current directory "."
@@ -167,8 +191,16 @@ summarize.sims <- function(simulations_path
                            ,data_end_pattern="^\n"
                            ,sep=";"
                            ,recursive=T
+                           ,callback_data=NULL
+                           ,callback_parameters=NULL
                            )
 {
+    if (!dir.exists(simulations_path))
+    {
+        print(paste0("The directory provided to the argument simulations_path ",simulations_path," cannot be found."))
+        return(NA)
+    }
+
     # get a list of all the simulation files
     all.simulation.files <- list.files(
             path=simulations_path
@@ -185,12 +217,18 @@ summarize.sims <- function(simulations_path
         return(NA)
     }
 
+    # go through all the simulation files
+    # and process them
     for (i in 1:length(all.simulation.files))
     {
+        # get the file name
         file_i <- all.simulation.files[[i]]
-        # filename might be a factor so let's change it to character
+
+        # filename might be a factor so
+        # let's change it to character
         file_i_chr <- as.character(file_i)
 
+        # give message about progress
         print(paste0("processing file "
                      ,i
                      ," out of "
@@ -200,12 +238,15 @@ summarize.sims <- function(simulations_path
                      )
              )
 
+        # find the parameters section
         param.lines <- patterns2lines(
                filename=file_i_chr
                ,pattern_from = parameter_start_pattern
                ,pattern_to = parameter_end_pattern)
 
-        if (is.na(param.lines[[1]])) {
+       # if there are no parameters, skip this simulaton
+        if (is.na(param.lines[[1]]))
+        {
             print(paste("cannot find a match for the pattern "
                         ,"parameter_start_pattern='"
                         ,parameter_start_pattern
@@ -217,16 +258,18 @@ summarize.sims <- function(simulations_path
             next
         }
 
+        # parameters have been found, process them
         parameters <- collect.params(
                        filename=file_i_chr
                        ,line_from = param.lines[[1]]
                        ,line_to = param.lines[[2]]
-                       ,sep=sep)
+                       ,sep=sep
+                       ,callback=callback_parameters)
 
-
+        # again, if no parameters, skip this stuff
         if (is.null(parameters))
         {
-            next 
+            next
         }
 
         data.lines <- patterns2lines(
@@ -259,6 +302,14 @@ summarize.sims <- function(simulations_path
 
         # get last line of the data
         last.line <- the.data[nrow(the.data),]
+
+        # perform some post-processing using callbacks
+        if (!is.null(callback_data))
+        {
+            callback.result <- callback_data(the.data)
+
+            last.line <- cbind(last.line, callback.result)
+        }
 
         # now tie parameters, last line of data and filename together
         total.data <- cbind(

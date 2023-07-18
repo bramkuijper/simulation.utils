@@ -1,6 +1,6 @@
 Package: simulation.utils
 Title: Utilities for Working with Simulations in the Kuijper Lab
-Version: 0.0.0.9000
+Version: 0.5
 Authors@R: 
     person(given = "Bram",
            family = "Kuijper",
@@ -17,4 +17,4 @@ License: `use_mit_license()`
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3

@@ -54,6 +54,8 @@ expand_params <- function(parameter_list)
 #' each simulation will write its output.
 #' @param yaml_file_prefix the prefix of each individual \code{.yaml} file that
 #' iscontaining the parameters for a single simulation
+#' @param output_file_yaml_key the identifier key that a file name has in the
+#' yaml file. Default is \code{base_name}.
 #' @return This function returns \code{NULL}. However,
 #' a file with name \code{batch_file_prefix} will be
 #' written to disk. If the option \code{yaml=TRUE}, this will be accompanied
@@ -90,7 +92,7 @@ expand_params <- function(parameter_list)
 #' parameter_object$b <- 0.1
 #'
 #' # call the batch file function
-#' make_batch_file(parameter_list=parameter_object
+#' make.batch.file(parameter_list=parameter_object
 #'                      ,executable_path="./my_simulation.exe")
 #' # which produces a file named 'batch_file.sh' in the current directory
 #' # containing:
@@ -256,7 +258,7 @@ make.batch.file.yaml <- function(
 #' parameter_object$b <- 0.1
 #'
 #' # call the batch file function
-#' make_batch_file(parameter_list=parameter_object
+#' make.batch.file(parameter_list=parameter_object
 #'                      ,executable_path="./my_simulation.exe")
 #' # which produces a file named 'batch_file.sh' in the current directory
 #' # containing:
@@ -328,7 +330,7 @@ make.batch.file <- function(
     # write the batch file
     write(x=paste(list.batch.contents,collapse="\n")
             ,file=paste0(batch_file_prefix,".sh"))
-} # end make_batch_file
+} # end make.batch.file
 
 # write a file summarizing the parameters that are varied
 summarize.params <- function(...)
