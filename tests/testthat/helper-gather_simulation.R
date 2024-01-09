@@ -14,33 +14,37 @@ generate_params <- function(delim=";",delim_two="")
     rbinom(n=5,size=23,prob=0.5)
     ,sample(x=c("male","female"),size=1)
     ,rnorm(n=3)
+    )
 
-  )
+  values_parameters <- unlist(values_parameters)
 
   # get names for the parameters
   names_parameters <- letters[1:length(values_parameters)]
 
   # add 'par' in front
   names_parameters <- sapply(
-    X = names_paremeters
+    X = names_parameters
     ,FUN=function(x){return(paste0("par.",x))}
     ,USE.NAMES = F)
 
   # some error checking
-  stopifnot(length(names_parameters) == length(values))
+  stopifnot(length(names_parameters) == length(values_parameters))
 
   # return a parameter string
   param_str <- ""
 
-  for (value_idx in length(values))
+  for (value_idx in 1:length(values_parameters))
   {
     param_str <- paste0(param_str
-                        ,delim
                         ,names_parameters[[value_idx]]
+                        ,delim
+                        ,values_parameters[[value_idx]]
                         ,delim_two
-                        ,"\n")
+                        ,"\n"
+                        ,collapse="")
   }
 
+  return(param_str)
 } # end generate_params()
 
 # generate a single data file
@@ -65,7 +69,7 @@ make_single_file <- function(
 
   # make the rest of the columns floating point
   floating.point.cols <- matrix(
-    data = rnorm(n=ncols * numgen)
+    data = rnorm(n=(ncols - 1)* numgen)
     ,nrow=numgen
     ,ncol= ncols - 1)
 
@@ -76,40 +80,65 @@ make_single_file <- function(
           floating.point.cols
           )
     )
+
   # give the data frame simple column names
-  names(the.data) <- letters(ncol(the.data))
+  names(the.data) <- letters[1:ncol(the.data)]
 
   # now generate the whole csv file
   # as a character string (because we still
   # need to append parameters to it)
+  close(textConnection(object = "tempfile"
+                             ,open ="w"))
 
-  textconn = "tempfile"
+  textconn <- textConnection(object = "tempfile"
+                             ,open ="w")
 
   if (!csv2)
   {
     write.csv(x=the.data
-              ,file=textConnection(textconn,"w")
+              ,file=textconn
               ,row.names=F
               ,quote=F)
-  } else
-  {
+  } else {
     write.csv2(x=the.data
-              ,file=textConnection(textconn,"w")
+              ,file=textconn
                ,row.names=F
               ,quote=F)
   }
 
-  # now generate the parameters
-  parameter_string <- generate_params()
-
   # append parameters to the string reflecting the csv
-  the_csv_string <- paste(textconn,"\n","\n",parameter_string)
+  the_csv_string <- paste0(paste0(tempfile,collapse="\n"),"\n","\n")
+
+
+  close(textconn)
+
+  # now generate the parameters
+  parameter_string <- generate_params(delim = ifelse(csv2,";",","))
+
+  # generate the whole file by combining csv file
+  # and the parameters
+  the_csv_string <- paste0(the_csv_string, paste0(parameter_string))
 
   # write the whole string to a file
   writeLines(text = the_csv_string
              ,con = withr::local_file(.file = file_name, .local_envir = envt)
              )
+
 } # end make_single_file()
+
+# helper function to remove previously generated files during multiple tests
+remove_files <- function(
+    file_name_prefix) {
+
+  # remove all test files in their
+  all.files <- list.files(
+                          path = "."
+                          ,recursive = T
+                          ,pattern = paste0(file_name_prefix,".*")
+                          )
+
+  file.remove(all.files)
+}
 
 # make a bunch of files of the normal type we use
 make_bunch_of_files_normal_type <- function(
@@ -119,24 +148,41 @@ make_bunch_of_files_normal_type <- function(
     ,nested_dirs = F
 )
 {
+  # first remove any previously generated test files
+  remove_files(file_name_prefix)
+
   # if no weird nesting just make a whole bunch of different files
   if (!nested_dirs)
   {
     for (file_i in 1:n_files)
     {
       # create a file name
-      date_format = format(x=Sys.Time(),"%Y_%m_%d_%H%M%S")
+      date_format = format(x=Sys.time(),"%Y_%m_%d_%H%M%S")
       file_name = paste0(file_name_prefix,date_format,"_",file_i)
 
       # create the file and move on
       make_single_file(file_name = file_name, envt = envt)
     }
   } else { # ok nested dir
+
     # we will make a few files in directory a1/
-    # then a few files in directory a2/
+    # then a few files in directory a1/a2/
+    # then a few files in directory a3/
     # and then a few in the top-level dir
-    create_directory()
+    nested_dir_name <- "test_a1/test_a2/"
 
+    dir.create(nested_dir_name, recursive=T)
 
+    for (file_i in 1:n_files)
+    {
+      # create a file name
+      date_format = format(x=Sys.time(),"%Y_%m_%d_%H%M%S")
+      file_name = paste0(file_name_prefix,date_format,"_",file_i)
+
+      # create the file and move on
+      make_single_file(file_name = file_name, envt = envt)
+    }
+
+    dir.create("test_a3")
   }
 } # make_bunch_of_files_normal_type
