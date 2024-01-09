@@ -183,12 +183,12 @@ patterns2lines <- function(
 #' # x: num 0.33 0.35 0.35...
 #' # file: sim_cue_integration_23_06_2020_095246_1.csv ...
 #' @export
-summarize.sims <- function(simulations_path
+summarize.sims <- function(simulations_path="."
                            ,simulation_file_pattern="sim_.*"
                            ,parameter_start_pattern="^var"
                            ,parameter_end_pattern=NA
                            ,data_start_pattern="^generation"
-                           ,data_end_pattern="^\n"
+                           ,data_end_pattern="^$"
                            ,sep=";"
                            ,recursive=T
                            ,callback_data=NULL
@@ -272,6 +272,7 @@ summarize.sims <- function(simulations_path
             next
         }
 
+        # find out where the data actually is
         data.lines <- patterns2lines(
                filename=file_i_chr
                ,pattern_from = data_start_pattern
