@@ -12,7 +12,7 @@ collect.params <- function(filename
     raw.params <- read.table(filename
             ,header= F
             ,sep=sep
-            ,skip=line_from
+            ,skip=line_from - 1
             ,nrow=line_to-line_from
             ,stringsAsFactors=F)
 
@@ -283,13 +283,14 @@ summarize.sims <- function(simulations_path="."
             data.lines[[1]] = 1
         }
 
+        # determine the position of the last line
         pos.last.line <-
             ifelse(test = is.na(data.lines[[2]])
-                   ,yes = -1  # no end to data, write -1
+                   ,yes = -1  # no end to data, write -1, reflecting there is no end to rows
                    # end to data, subtract lines to skip
                    # and subtract 1 additional line (because
                    # header)
-                   ,no = data.lines[[2]] - data.lines[[1]] - 2)
+                   ,no = data.lines[[2]] - (data.lines[[1]]-1) - 2)
 
         # read the actual data
         the.data <- read.table(
